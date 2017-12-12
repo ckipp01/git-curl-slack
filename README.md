@@ -12,8 +12,9 @@ This will gather up the following information on the repository:
 
 It will then shoot a curl message in json format to a webook that you'll need to set up in slack with the results.
 
-#### Testing to make sure it works
-Just pass in `test` as a parameter after the script runs, and the result will go to an alternative webhook url.
+#### Parameters
+You have 2 options for parameters. If you pass in test, you'll need to be in the directory when you run it, or you can run it
+and pass the directory in that you'd like it to cd into and run the script.
 
 #### Setting up the webook
 Folliwng the instruction [here in the slack docs](https://api.slack.com/incoming-webhooks) to set up your incoming webhook.

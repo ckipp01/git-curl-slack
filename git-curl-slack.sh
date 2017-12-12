@@ -1,10 +1,12 @@
 #!/bin/sh
 
-# Check to see if a parameter was passed in (test) will bring you to test rather than to the developer channel
+# Check to see if a parameter was passed in. It should either be test if you are running in a directory and it will shoot
+# it to a test webook, or the path you'd like it to be executed in, which will then shoot it to the actually webhook url.
 if [ "$1" = "test" ]
 then
     curlUrl="Put hook url for testing here"
 else
+    cd $1
     curlUrl="Put main hook url here"
 fi
 
