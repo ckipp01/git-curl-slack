@@ -1,18 +1,19 @@
 #!/bin/sh
 
-# Check to see if a parameter was passed in. It should either be test if you are running in a directory and it will shoot
-# it to a test webook, or the path you'd like it to be executed in, which will then shoot it to the actually webhook url.
+# Check to see what parameter was passed in. Either the path you want it executed in or test if you are executing it by hand testing.
+# If no path, it will default to the current directory
 if [ "$1" = "test" ]
 then
     curlUrl="Put hook url for testing here"
 else
-    cd $1
+    cd ${1}:-.
     curlUrl="Put main hook url here"
 fi
 
-# Set the original curlData here and the total count for affected directories
+# Set the original curlData here for the scope and the total count for affected directories
 curlData=""
 totalCount=0
+hostname=`hostname`
 
   # Loop all directories
   for f in */
@@ -32,10 +33,10 @@ totalCount=0
              mod=1
              if [ $modifiedNumber -gt 1 ]
              then
-                modifiedText="Modified Files"
+                 modifiedText="Modified Files"
              else
-                modifiedText="Modified File"
-            fi
+                 modifiedText="Modified File"
+             fi
          fi
 
          # Check for deleted file
@@ -72,8 +73,8 @@ totalCount=0
          then
             totalCount=$(($totalCount + 1))
             count=0
-            curlData="$curlData{\"title\":\"$name\","
-
+            branch=$(git branch | sed -n '/\* /s///p')
+            curlData="$curlData{\"title\":\"$name\nCurrent Branch: $branch\","
             if [ $aheadStatus -gt 0 ]
             then
                 count=$(($count + 1))
@@ -105,7 +106,6 @@ totalCount=0
                 then
                     curlData="$curlData $deletedNumber $deletedText" 
                 else
-                    echo $count
                     curlData="$curlData\"text\":\"$deletedNumber $deletedText"
                 fi
             fi
@@ -117,15 +117,34 @@ totalCount=0
      fi
  done
 
-#prepare the curl call and check to see if there are any offenders
+# Prepare the curl call and check to see if there are any offenders
+case $totalCount in 
+    0)
+        message="Good job message here"
+        break;
+        ;;
+    1|2|3)
+        message="${hostname}\n Almost good job message here"
+        break;
+        ;;
+    4|5|6)
+        message="${hostname}\n Time to pay attention message here"
+        break;
+        ;;
+    *)
+        message="${hostname}\n Get your life together message here"
+        break;
+        ;;
+esac
+
 if [ $totalCount -gt 0 ]
 then
-    payload="{\"text\":\"Input Message here\", \"attachments\": [ $curlData ]}"
+    payload="{\"text\": \"${message}\n Number of repositories that need attention: ${totalCount}\", \"attachments\": [ $curlData ]}"
 else
-    payload="{\"text\":\"Input Message here\"}"
+    payload="{\"text\":\"${message}\"}"
 fi
 
-#The magic
+# The magic
 curl \
     -X POST \
     -H "Content-type: application/json" \

@@ -5,10 +5,11 @@ I could just drop in a directory with a lot of projects and get a message shot t
 repositories that may have various changes uncommitted or that may be ahead of origin.
 
 This will gather up the following information on the repository:
-1. Number of modified files
-2. Number of deleted files
-3. If there are untracked files
-4. Whether the checked out branch is ahead of origin or not.
+1. Current checkout out branch
+2. Number of modified files
+3. Number of deleted files
+4. If there are untracked files
+5. Whether the checked out branch is ahead of origin or not.
 
 It will then shoot a curl message in json format to a webook that you'll need to set up in slack with the results.
 
