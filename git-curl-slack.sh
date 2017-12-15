@@ -6,7 +6,7 @@ if [ "$1" = "test" ]
 then
     curlUrl="Put hook url for testing here"
 else
-    cd ${1}:-.
+    cd ${1:-.}
     curlUrl="Put main hook url here"
 fi
 
