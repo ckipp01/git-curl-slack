@@ -1,13 +1,16 @@
 #!/bin/sh
 
+# Require a .conf file with your url for live and testing
+.<path-to-conf-file>
+
 # Check to see what parameter was passed in. Either the path you want it executed in or test if you are executing it by hand testing.
 # If no path, it will default to the current directory
 if [ "$1" = "test" ]
 then
-    curlUrl="Put hook url for testing here"
+    curlUrl=$testUrl
 else
     cd ${1:-.}
-    curlUrl="Put main hook url here"
+    curlUrl=$liveUrl
 fi
 
 # Set the original curlData here for the scope and the total count for affected directories
@@ -18,7 +21,7 @@ hostname=`hostname`
   # Loop all directories
   for f in */
   do
- 
+
      # Check if directory is a git repository
      if [ -d "$f/.git" ]
      then
@@ -68,6 +71,13 @@ hostname=`hostname`
              aheadText="Branch is ahead of origin"
          fi
 
+         # Check to see if any branches have diverged
+         if [ $diverged -gt 0 ]
+         then
+             mod=1
+             divergedText="Branch has diverged"
+         fi
+
          # Check to see if there are any rulebreakers
          if [ ! $mod -eq 0 ]
          then
@@ -104,9 +114,18 @@ hostname=`hostname`
             then
                 if [ $count -gt 0 ]
                 then
-                    curlData="$curlData $deletedNumber $deletedText" 
+                    curlData="$curlData $deletedNumber $deletedText\n"
                 else
-                    curlData="$curlData\"text\":\"$deletedNumber $deletedText"
+                    curlData="$curlData\"text\":\"$deletedNumber $deletedText\n"
+                fi
+            fi
+            if [ $diverged -gt 0 ]
+            then
+                if [ $count -gt 0 ]
+                then
+                    curlData="$curlData $divergedText"
+                else
+                    curlData="$curlData\"text\":\"$divergedText"
                 fi
             fi
             curlData="$curlData \" , \"color\":\"#B33A3A\"},"
@@ -118,7 +137,7 @@ hostname=`hostname`
  done
 
 # Prepare the curl call and check to see if there are any offenders
-case $totalCount in 
+case $totalCount in
     0)
         message="Good job message here"
         break;
